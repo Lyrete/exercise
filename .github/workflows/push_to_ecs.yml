@@ -57,11 +57,12 @@ jobs:
         id: task-definition-get
         run: |
           echo "latest_task_def_arn=$(aws ecs list-task-definitions \
-            --family-prefix my-family-name \
+            --family-prefix hedgehog \
             --sort DESC \
             --max-items 1 \
             --query "taskDefinitionArns[0]" \
             --output text)" >> $GITHUB_OUTPUT
+          echo "$latest_task_def_arn"
 
       - name: Render Amazon ECS task definition
         id: render-definition
