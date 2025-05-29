@@ -3,7 +3,7 @@ name: Deploy to ECS
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   AWS_REGION: ${{vars.AWS_REGION}}
@@ -35,5 +35,4 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Sts GetCallerIdentity
-        run: |
-          aws sts get-caller-identity
+        run: aws sts get-caller-identity
