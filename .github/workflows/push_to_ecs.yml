@@ -108,7 +108,7 @@ jobs:
           container-name: web
           image: ${{ steps.build-push.outputs.image || steps.get-image.outputs.image }}
 
-      - name: Deploy to Amazon ECS service
+      - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-definition.outputs.task-definition }}
