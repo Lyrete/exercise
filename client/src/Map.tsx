@@ -1,6 +1,8 @@
 import { GlobalStyles } from "@mui/material";
 import { View, Map as OlMap, Feature } from "ol";
+import { Coordinate } from "ol/coordinate";
 import { GeoJSON } from "ol/format";
+import { Point } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import OSM from "ol/source/OSM.js";
@@ -13,11 +15,12 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 
 interface Props {
   children?: ReactNode;
-  features?: GeoJSON.Feature[];
+  geometries?: GeoJSON.Geometry[];
   onMapClick: (coordinates: number[]) => void;
+  center: Coordinate;
 }
 
-export function Map({ children, onMapClick, features }: Props) {
+export function Map({ children, onMapClick, geometries, center }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -57,33 +60,58 @@ export function Map({ children, onMapClick, features }: Props) {
             }),
           }),
         }),
+        // Current selection layer
+        new VectorLayer({
+          source: new VectorSource(),
+          style: new Style({
+            image: new Circle({
+              radius: 7,
+              fill: new Fill({ color: "#FF6F00" }),
+              stroke: new Stroke({ color: "black", width: 3 }),
+            }),
+          }),
+        }),
       ],
     });
   });
 
+  useEffect(() => {
+    const view = olMap.getView();
+    view.setCenter(center);
+  }, [center]);
+
   /** olMap -object's initialization on startup  */
   useEffect(() => {
     olMap.setTarget(mapRef.current as HTMLElement);
+    const layers = olMap.getLayers().getArray();
+    const selectionLayer = (layers[2] as VectorLayer<VectorSource>).getSource();
 
     olMap.on("click", (event) => {
+      const feature = new Feature({
+        geometry: new Point(event.coordinate),
+      });
       onMapClick(event.coordinate);
+      selectionLayer?.set;
+      selectionLayer?.clear();
+      selectionLayer?.addFeature(feature);
     });
   }, [olMap]);
 
   /** Listen for changes in the 'features' property */
   useEffect(() => {
-    if (!features || !features.length) return;
+    if (!geometries || !geometries.length) return;
     const layers = olMap.getLayers().getArray();
 
     const source = (layers[1] as VectorLayer<VectorSource>).getSource();
-    const olFeatures = features.map(
+    const olFeatures = geometries.map(
       (geometry) =>
         new Feature({
-          geometry: new GeoJSON().readGeometry(geometry.geometry),
+          geometry: new GeoJSON().readGeometry(geometry),
         })
     );
+    source?.clear();
     source?.addFeatures(olFeatures);
-  }, [features]);
+  }, [geometries]);
 
   return (
     <div style={{ width: "100%", height: "100%" }}>

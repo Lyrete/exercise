@@ -11,13 +11,13 @@ dependencies:
 
 devDependencies:
   '@trivago/prettier-plugin-sort-imports':
-    specifier: ^4.0.0
+    specifier: ^4.3.0
     version: 4.3.0(prettier@3.5.3)
   '@types/node':
-    specifier: ^18.11.18
+    specifier: ^18.19.103
     version: 18.19.103
   typescript:
-    specifier: ^4.9.4
+    specifier: ^4.9.5
     version: 4.9.5
 
 packages:
