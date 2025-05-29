@@ -41,7 +41,6 @@ COPY server/package*.json ./
 RUN npm ci
 
 COPY server ./
-RUN rm .env
 RUN npm run build
 RUN rm -r src
 
