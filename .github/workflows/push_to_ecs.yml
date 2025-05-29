@@ -1,0 +1,39 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: ${{vars.AWS_REGION}}
+  ECR_REPOSITORY: ${{vars.ECR_REPO}} # set this to your Amazon ECR repository name
+  ECS_SERVICE: ${{vars.ECS_SERVICE}}
+  ECS_CLUSTER: ${{vars.AWS_ECS_CLUSTER}} # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: ./data/ecs_task.json # set this to the path to your Amazon ECS task definition
+  CONTAINER_NAME: service # set this to the name of the container in the
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{vars.ROLE}}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sts GetCallerIdentity
+        run: |
+          aws sts get-caller-identity
