@@ -23,10 +23,35 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
+  check-if-need-rebuild:
+    runs-on: ubuntu-latest
+    outputs:
+      need-rebuild: ${{ steps.filter.outputs.sourcefiles }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            sourcefiles:
+              - 'client/**'
+              - 'server/**'
+              - 'shared/**'
+              - 'Dockerfile'
+
+      - name: Sourcefiles changed
+        if: steps.filter.outputs.sourcefiles == 'true'
+        run: echo "Sourcefiles changed"
+
+      - name: No sourcefiles changed
+        if: steps.filter.outputs.sourcefiles != 'true'
+        run: echo "No changes to sourcefiles"
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
+    needs: check-if-need-rebuild
 
     steps:
       - name: Checkout
@@ -45,6 +70,7 @@ jobs:
 
       - name: Build and push image
         id: build-push
+        if: needs.check-if-need-rebuild.outputs.need-rebuild == 'true'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
@@ -52,6 +78,18 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Get latest image
+        id: get-image
+        if: needs.check-if-need-rebuild.outputs.need-rebuild != 'true'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          latest_image_tag=$(aws ecr describe-images \
+            --repository-name my-repo-name \
+            --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' \
+            --output text)
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$latest_image_tag" >> $GITHUB_OUTPUT
 
       - name: Get last task definition
         id: task-definition-get
@@ -61,8 +99,9 @@ jobs:
             --sort DESC \
             --max-items 1 \
             --query "taskDefinitionArns[0]" \
-            --output text)" >> $GITHUB_OUTPUT
+            --output text)"
           echo "$latest_task_def_arn"
+          echo "latest_task_def_arn=$latest_task_def_arn" >> $GITHUB_OUTPUT
 
       - name: Render Amazon ECS task definition
         id: render-definition
@@ -70,7 +109,7 @@ jobs:
         with:
           task-definition-arn: ${{ steps.task-definition-get.outputs.latest_task_def_arn }}
           container-name: web
-          image: ${{ steps.build-push.outputs.image }}
+          image: ${{ steps.build-push.outputs.image || steps.get-image.outputs.image }}
 
       - name: Deploy to Amazon ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
