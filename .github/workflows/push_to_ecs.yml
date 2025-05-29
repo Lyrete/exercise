@@ -2,6 +2,11 @@ name: Deploy to ECS
 
 on:
   push:
+    # paths:
+    #   - client/**
+    #   - server/**
+    #   - shared/**
+    #   - Dockerfile
     branches:
       - master
 
@@ -51,13 +56,18 @@ jobs:
       - name: Get last task definition
         id: task-definition-get
         run: |
-          echo "latest_task=$((aws ecs list-task-definitions --family-prefix hedghehog)[-1])" >> $GITHUB_OUTPUT
+          echo "latest_task_def_arn=$(aws ecs list-task-definitions \
+            --family-prefix my-family-name \
+            --sort DESC \
+            --max-items 1 \
+            --query "taskDefinitionArns[0]" \
+            --output text)" >> $GITHUB_OUTPUT
 
       - name: Render Amazon ECS task definition
         id: render-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition-arn: ${{ steps.task-definition-get.outputs.latest_task }}
+          task-definition-arn: ${{ steps.task-definition-get.outputs.latest_task_def_arn }}
           container-name: web
           image: ${{ steps.build-push.outputs.image }}
 
