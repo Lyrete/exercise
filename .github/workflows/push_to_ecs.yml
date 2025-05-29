@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   check-if-need-rebuild:
+    name: Check if rebuild required
     runs-on: ubuntu-latest
     outputs:
       need-rebuild: ${{ steps.filter.outputs.sourcefiles }}
@@ -94,9 +95,8 @@ jobs:
         id: task-definition-get
         run: |
           echo "latest_task_def_arn=$(aws ecs list-task-definitions \
-            --family-prefix hedgehog \
+            --family-prefix hedgehog-task \
             --sort DESC \
-            --max-items 1 \
             --query "taskDefinitionArns[0]" \
             --output text)"
           echo "$latest_task_def_arn"
