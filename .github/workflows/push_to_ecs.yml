@@ -98,9 +98,7 @@ jobs:
             --family-prefix hedgehog-task \
             --sort DESC \
             --query "taskDefinitionArns[0]" \
-            --output text)"
-          echo "$latest_task_def_arn"
-          echo "latest_task_def_arn=$latest_task_def_arn" >> $GITHUB_OUTPUT
+            --output text)" >> $GITHUB_OUTPUT
 
       - name: Render Amazon ECS task definition
         id: render-definition
