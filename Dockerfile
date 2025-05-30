@@ -7,7 +7,7 @@
 ###
 FROM node:18.10-alpine AS base
 
-ENV APPDIR /app
+ENV APPDIR=/app
 
 WORKDIR ${APPDIR}/shared
 

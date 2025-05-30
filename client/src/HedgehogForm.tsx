@@ -46,6 +46,7 @@ export function HedgehogForm({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log(coordinates);
     setSelectedCoord(coordinates);
   }, [coordinates]);
 
@@ -150,8 +151,9 @@ export function HedgehogForm({
           <Typography variant="overline">Selected coordinates</Typography>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ pb: 2 }}>
             <Typography>
-              {selectedCoord && toStringHDMS(toLonLat(selectedCoord))}
-              {!selectedCoord && "--° --′ --″ - --° --′ --″ -"}
+              {selectedCoord.length === 2
+                ? toStringHDMS(toLonLat(selectedCoord))
+                : "--° --′ --″ - --° --′ --″ -"}
             </Typography>
             <Button
               variant="text"

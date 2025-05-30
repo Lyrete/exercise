@@ -48,7 +48,7 @@ export function HedgehogInfo({
         padding: "1em",
       }}
     >
-      {visibleHedgehog && (
+      {visibleHedgehog ? (
         <Stack>
           <Typography variant="overline">Name</Typography>
           <Typography>{visibleHedgehog.name}</Typography>
@@ -74,6 +74,8 @@ export function HedgehogInfo({
             </Button>
           </Stack>
         </Stack>
+      ) : (
+        <Typography>Choose a hedgehog from the left to see details</Typography>
       )}
     </Paper>
   );
