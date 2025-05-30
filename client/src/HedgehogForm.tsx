@@ -42,18 +42,14 @@ export function HedgehogForm({
   setCenter,
 }: Props) {
   const [sex, setSex] = useState<Sex>(Sex.Male);
-  const [selectedCoord, setSelectedCoord] = useState(coordinates);
+  const [selectedCoord, setSelectedCoord] = useState<Coordinate>(coordinates);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setSelectedCoord(coordinates);
   }, [coordinates]);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<NewHedgehog>({
+  const { register, handleSubmit, reset } = useForm<NewHedgehog>({
     resolver: async (data, context, options) => {
       // Inject location to validated data
       const locationData = {
@@ -87,6 +83,7 @@ export function HedgehogForm({
       console.error(`Error while sending new hedgehog: ${err}`);
     }
     setLoading(false);
+    reset();
   };
 
   const onError: SubmitErrorHandler<NewHedgehog> = (errors) =>
@@ -101,20 +98,29 @@ export function HedgehogForm({
       }}
     >
       <form onSubmit={handleSubmit(handleFormSubmit, onError)}>
-        <Stack spacing={2}>
-          <Typography variant="h5">Add hedghehog sighting</Typography>
-          <TextField required label="Name" {...register("name")}></TextField>
+        <Stack>
+          <Typography variant="h5" sx={{ pb: 2 }}>
+            Add hedghehog sighting
+          </Typography>
+          <TextField
+            required
+            label="Name"
+            {...register("name")}
+            sx={{ pb: 2 }}
+          ></TextField>
           <TextField
             required
             type="number"
             label="Age"
             {...register("age", { valueAsNumber: true })}
+            sx={{ pb: 2 }}
           ></TextField>
           <Stack
             direction="row"
             alignItems="center"
             justifyContent="center"
             spacing={2}
+            sx={{ pb: 2 }}
           >
             <IconButton
               onClick={() => setSex(Sex.Male)}
@@ -142,8 +148,11 @@ export function HedgehogForm({
             </IconButton>
           </Stack>
           <Typography variant="overline">Selected coordinates</Typography>
-          <Stack direction="row" alignItems="center" sx={{ mt: 0 }}>
-            <Typography>{toStringHDMS(toLonLat(coordinates))}</Typography>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ pb: 2 }}>
+            <Typography>
+              {selectedCoord && toStringHDMS(toLonLat(selectedCoord))}
+              {!selectedCoord && "--° --′ --″ - --° --′ --″ -"}
+            </Typography>
             <Button
               variant="text"
               color="success"

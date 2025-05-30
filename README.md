@@ -58,7 +58,9 @@ docker compose up -d -V
 ```
 
 ## TODO
+- Actually show form errors oops forgot
 - Define infra in tofu
+- Able to remove selection from map
 - Update last remaining libraries
 - Use faker to create fake hedgehogs for testing
 - Add tests
