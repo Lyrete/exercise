@@ -24,7 +24,6 @@ export function hedgehogRouter(
     });
   });
 
-  // TODO: Yksittäisen siilin hakeminen tietokannasta ID:llä
   fastify.get<RouteGenericInterface & { Params: { hedgehogId: number } }>(
     "/:hedgehogId",
     async function (request, reply) {
